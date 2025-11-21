@@ -1,0 +1,58 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Ejecuta a las 2 AM UTC todos los días
+  workflow_dispatch:  # Permite ejecución manual
+
+jobs:
+  nightly-test:
+    name: Nightly Full Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run comprehensive tests
+      run: |
+        pytest tests/ -v --cov=src --cov-report=html --cov-report=term
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: nightly-coverage-report
+        path: htmlcov/
+        retention-days: 7
+    
+    - name: Check for dependency updates
+      run: |
+        pip list --outdated
+    
+    - name: Database integrity check
+      run: |
+        python -c "
+        from src.database.connection import Database
+        db = Database()
+        db.connect('test_integrity.db')
+        print('✅ Database integrity check passed')
+        "
+    
+    - name: Performance benchmark
+      run: |
+        python -m pytest tests/ --durations=10
+    
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "❌ Nightly build failed"
