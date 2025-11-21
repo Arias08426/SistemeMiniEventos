@@ -64,7 +64,7 @@ jobs:
     
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: test-results-${{ matrix.python-version }}
         path: |
@@ -135,7 +135,7 @@ jobs:
     
     - name: Upload Bandit report
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: bandit-security-report
         path: bandit-report.json
@@ -176,7 +176,7 @@ jobs:
         tar -czf fastevents-api.tar.gz build/
     
     - name: Upload build artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: fastevents-api-build
         path: fastevents-api.tar.gz
