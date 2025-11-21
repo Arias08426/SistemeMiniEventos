@@ -7,8 +7,12 @@ from src.cache.cache_service import CacheService
 
 @pytest.fixture
 def cache():
-    """Crea un servicio de caché para pruebas"""
-    return CacheService()
+    """Crea un servicio de caché para pruebas (sin Redis, usa memoria)"""
+    # Forzar uso de memoria para tests (Redis no disponible en CI/CD)
+    cache_service = CacheService(redis_url='redis://localhost:9999')  # Puerto inválido
+    cache_service.clear()  # Limpiar antes de cada test
+    yield cache_service
+    cache_service.clear()  # Limpiar después de cada test
 
 def test_cache_set_and_get(cache):
     """Prueba: almacenar y recuperar del caché"""

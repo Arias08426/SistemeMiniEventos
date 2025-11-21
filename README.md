@@ -48,6 +48,35 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
+### 4. Configurar Redis (Opcional pero recomendado)
+
+El sistema usa **Redis** para caché. Si Redis no está disponible, automáticamente usa caché en memoria.
+
+#### Opción A: Redis en Windows
+
+1. Descargar desde: https://github.com/microsoftarchive/redis/releases
+2. Instalar y ejecutar: `redis-server`
+
+#### Opción B: Redis con Docker
+
+```powershell
+docker run -d -p 6379:6379 --name redis-cache redis:alpine
+```
+
+#### Opción C: Sin Redis
+
+El sistema funcionará automáticamente con caché en memoria si Redis no está disponible.
+
+**Configurar URL de Redis (opcional):**
+
+```powershell
+# Variable de entorno (Windows)
+$env:REDIS_URL = "redis://localhost:6379/0"
+
+# O en Linux/Mac
+export REDIS_URL="redis://localhost:6379/0"
+```
+
 ## ▶️ Ejecución
 
 ### Iniciar el servidor
@@ -138,18 +167,29 @@ La base de datos se crea automáticamente al iniciar la aplicación: `fastevents
 
 ## 💾 Sistema de Caché
 
-El sistema implementa un caché en memoria para eventos:
+El sistema implementa **Redis** para caché de eventos con fallback automático a memoria.
 
-**Funcionalidad:**
-- Almacena el último evento consultado por ID
-- Se invalida automáticamente cuando:
+**Características:**
+- ✅ **Redis**: Persistente, multi-servidor, con TTL
+- ✅ **Fallback automático**: Usa memoria RAM si Redis no está disponible
+- ✅ Almacena eventos consultados por ID
+- ✅ Se invalida automáticamente cuando:
   - El evento se actualiza
   - El evento se elimina
   - Cambia la cantidad de inscritos
 
+**Configuración:**
+
+```python
+# Por defecto usa: redis://localhost:6379/0
+# Para personalizar:
+export REDIS_URL="redis://tu-servidor:6379/0"
+```
+
 **Implementación:**
 - Clase `CacheService` en `src/cache/cache_service.py`
 - Integrado en `EventService`
+- Soporte de TTL (Time To Live) para expiración automática
 
 ## ✅ Reglas de Negocio
 
